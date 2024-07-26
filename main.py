@@ -141,6 +141,15 @@ async def create_upload_file(file: UploadFile):
     historico_gina.append({"role": "assistent", "content": resposta})
     # Retornar a transcrição
     return resposta}
+@app.post('/gina')
+async def gina(pergunta:str):
+    historico_gina.append({"role": "user", "content": transcription.text})
+    resposta=getResposta(pergunta,treino_gina)
+    historico_gina.append({"role": "assistent", "content": resposta})
+    # Retornar a transcrição
+    return resposta
+
+    
 
 @app.get("/")
 async def main():
