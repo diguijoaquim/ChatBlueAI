@@ -140,7 +140,7 @@ async def create_upload_file(file: UploadFile):
     resposta=getResposta(transcription.text,treino_gina)
     historico_gina.append({"role": "assistent", "content": resposta})
     # Retornar a transcrição
-    return {"resposta": resposta}
+    return resposta}
 
 @app.get("/")
 async def main():
