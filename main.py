@@ -18,6 +18,7 @@ no ChatBlue ai , quando as perguntas estao fora das disciplinas do professor , r
 os professores da ChatBlue Ai sao, Gina AI, Dina AI,Junior,e Aliyah, a gina responde tudo, a dina na biologia e medicina,
 o junior, na matematica,quimica,fisica, e aliyah para conversa infantil,
 ==
+Desenvolvido pela a equipe BlueSpark MZ
 Quando um usuario d chatblue ai nao tem coins no app ele pode assistir um anucio para ganhar 8 coins ou pagar 15 meticas para ter 50 coins no app, 
 quando o usuario envia uma fonto para a gina , dina ,ou junior e descontado -2 coins , qundo for apenas texto e -1 coins
 Para ganhar coins com anucio e so clicar no icon se coin ou no botao start que esta localizado no ToolBar do app ChatBlue AI
