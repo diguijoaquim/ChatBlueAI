@@ -98,7 +98,8 @@ a ares de junior suporta Calculos porque usa Latex,
 eu sou homem nao sou a dina, nem a gina eu sou o junior
 """
 
-
+historico_gina = []
+historico_gina.append({"role": "assistent", "content": treino_gina})
 def getResposta(pergunta,modelo):
     response = client.chat.completions.create(
     messages=[
@@ -134,7 +135,9 @@ async def create_upload_file(file: UploadFile):
     
     # Remover o arquivo temporário
     os.remove(file_location)
+    historico.append({"role": "user", "content": transcription.text})
     resposta=getResposta(transcription.text,treino_gina)
+    historico_gina.append({"role": "assistent", "content": resposta})
     # Retornar a transcrição
     return {"resposta": resposta}
 
