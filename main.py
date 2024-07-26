@@ -135,7 +135,7 @@ async def create_upload_file(file: UploadFile):
     
     # Remover o arquivo temporário
     os.remove(file_location)
-    historico.append({"role": "user", "content": transcription.text})
+    historico_gina.append({"role": "user", "content": transcription.text})
     resposta=getResposta(transcription.text,treino_gina)
     historico_gina.append({"role": "assistent", "content": resposta})
     # Retornar a transcrição
