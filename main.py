@@ -62,6 +62,24 @@ def home_img():
 </body>
 </html>
 """)
+
+async def transcribe_audio(file):
+    # Ler o conteúdo do arquivo
+    contents = await file.read()
+
+    # Salvar o conteúdo em um BytesIO buffer
+    audio_buffer = io.BytesIO(contents)
+    audio_buffer.name = file.filename  # Definir o nome do arquivo para manter a extensão
+
+    # Fazer a transcrição usando Groq
+    transcription = client.audio.transcriptions.create(
+        file=(audio_buffer.name, audio_buffer.read()),
+        model="whisper-large-v3",
+        response_format="verbose_json",
+        language="pt",
+    )
+    return transcription
+
 @app.post("/uploadfile/")
 async def create_upload_file(file: UploadFile):
     # Salvar o arquivo no disco temporariamente
@@ -89,10 +107,14 @@ async def create_upload_file(file: UploadFile):
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
-        if file.type=="imagem":
-            print("imagem")
-        elif file.type=="audio":
-            print("audio")
+       
+
+        if 'jpg' in file.filename or 'png' in  file.filename or 'jpeg' in file.filename:
+            #foto
+            pass
+        elif 'wav' in file.filename or 'mp3' in  file.filename:
+            return transcribe_audio
+
     
     historico_gina.append({"role": "user", "content": pergunta})
     resposta=getResposta(pergunta,treino_gina)
