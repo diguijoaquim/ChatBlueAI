@@ -88,6 +88,12 @@ async def create_upload_file(file: UploadFile):
     
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
+    if file:
+        if file.type=="imagem":
+            print("imagem")
+        elif file.type=="audio":
+            print("audio")
+    
     historico_gina.append({"role": "user", "content": pergunta})
     resposta=getResposta(pergunta,treino_gina)
     historico_gina.append({"role": "assistent", "content": resposta})
