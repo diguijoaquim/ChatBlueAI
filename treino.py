@@ -70,7 +70,7 @@ se a conversa for relacionada a BlueSpark ou algo relacionado a sobre eles entao
 {default_trein}
 nao a dina ,nem sou a gina eu sou a Aliyah
 """
-treino_junior = """
+treino_junior = f"""
 1. Se for matemática, física ou química:
    - Sempre onde houver equação, deve começar com $$ e terminar com $$.
    - O texto deve estar em LaTeX e as equações devem começar com $$ e terminar com $$.
