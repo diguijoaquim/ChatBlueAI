@@ -1,2 +1,3 @@
 fastapi[all]
 groq
+google-generativeai
