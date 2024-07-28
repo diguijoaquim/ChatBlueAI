@@ -1,7 +1,13 @@
 from typing import Optional
-import os
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, File, UploadFile,Form
 from fastapi.responses import HTMLResponse
+import google.generativeai as genai
+from PIL import Image
+import io
+
+genai.configure(api_key="AIzaSyBtmW-jLX6FX8gcmwZrEGks19v5BNTqtt8")
+
+model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 from groq import Groq
 from treino import *
 
@@ -31,7 +37,25 @@ def getResposta(pergunta,modelo):
     model="llama3-8b-8192",
 )
     return response.choices[0].message.content
-
+    
+@app.get('/chat')
+def home():
+    return HTMLResponse("""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload de Imagem</title>
+</head>
+<body>
+    <h1>Upload de Imagem</h1>
+    <form action="/uploadimage/" enctype="multipart/form-data" method="post">
+        <input type="file" name="file">
+      <input type="text" name="text">
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>
+""")
 @app.post("/uploadfile/")
 async def create_upload_file(file: UploadFile):
     # Salvar o arquivo no disco temporariamente
@@ -139,3 +163,14 @@ async def main():
     </html>
     """
     return HTMLResponse(content=content)
+    
+@app.post("/uploadimage/")
+async def create_upload_file(file: UploadFile = File(...), text: str = Form(...)):
+    contents = await file.read()
+    img = Image.open(io.BytesIO(contents))
+    
+    # Assumindo que o modelo espera uma imagem de certa forma, por favor, ajuste conforme necessário
+    response = model.generate_content([text, img])
+    
+    return {"response": response.text}
+
