@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 import google.generativeai as genai
 from PIL import Image
 import io
+from typing import Optional
 
 genai.configure(api_key="AIzaSyBtmW-jLX6FX8gcmwZrEGks19v5BNTqtt8")
 
@@ -86,7 +87,7 @@ async def create_upload_file(file: UploadFile):
     return resposta
     
 @app.post('/gina')
-async def gina(pergunta:str):
+async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_gina.append({"role": "user", "content": pergunta})
     resposta=getResposta(pergunta,treino_gina)
     historico_gina.append({"role": "assistent", "content": resposta})
@@ -94,7 +95,7 @@ async def gina(pergunta:str):
     return resposta
 
 @app.post('/dina')
-async def dina(pergunta:str):
+async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_dina.append({"role": "user", "content": pergunta})
     resposta=getResposta(pergunta,treino_dina)
     historico_dina.append({"role": "assistent", "content": resposta})
@@ -102,7 +103,7 @@ async def dina(pergunta:str):
     return resposta
 
 @app.post('/junior')
-async def junior(pergunta:str):
+async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_junior.append({"role": "user", "content": pergunta})
     resposta=getResposta(pergunta,treino_junior)
     historico_junior.append({"role": "assistent", "content": resposta})
