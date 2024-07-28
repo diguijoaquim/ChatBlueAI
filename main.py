@@ -20,6 +20,7 @@ client = Groq(
 
 
 historico_gina = []
+historico_dina = []
 historico_gina.append({"role": "assistent", "content": treino_gina})
 def getResposta(pergunta,modelo):
     response = client.chat.completions.create(
@@ -86,6 +87,14 @@ async def gina(pergunta:str):
     historico_gina.append({"role": "user", "content": pergunta})
     resposta=getResposta(pergunta,treino_gina)
     historico_gina.append({"role": "assistent", "content": resposta})
+    # Retornar a transcrição
+    return resposta
+
+@app.post('/dina')
+async def dina(pergunta:str):
+    historico_dina.append({"role": "user", "content": pergunta})
+    resposta=getResposta(pergunta,treino_dina)
+    historico_dina.append({"role": "assistent", "content": resposta})
     # Retornar a transcrição
     return resposta
 
