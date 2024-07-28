@@ -37,8 +37,9 @@ def getResposta(pergunta,modelo):
     model="llama3-8b-8192",
 )
     return response.choices[0].message.content
-    
-@app.get('/chat')
+
+
+@app.get('/chat/')
 def home_img():
     return HTMLResponse("""
 <!DOCTYPE html>
