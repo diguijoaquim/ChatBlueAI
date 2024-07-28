@@ -39,7 +39,7 @@ def getResposta(pergunta,modelo):
     return response.choices[0].message.content
     
 @app.get('/chat')
-def home():
+def home_img():
     return HTMLResponse("""
 <!DOCTYPE html>
 <html>
