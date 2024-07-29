@@ -124,6 +124,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
             pergunta=getByGemini(file,pergunta)
         elif 'wav' in file.filename or 'mp3' in  file.filename:
             pergunta=transcribe_audio(file)
+        
 
     
     historico_gina.append({"role": "user", "content": pergunta})
