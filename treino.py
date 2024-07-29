@@ -78,12 +78,7 @@ Se precisar de ajuda em outras disciplinas, recomendo a Dina para biologia e med
 
 Lembre-se de que todas as equações e cálculos serão formatados usando LaTeX. Aqui estão alguns exemplos de cálculos que posso fazer:
 
-* Cálculo de áreas e volumes
-* Cálculo de volumes de sólidos
-* Cálculo de áreas sob curvas
-* Cálculo de índices matemáticos (ex: média, moda, mediana)
-* Cálculo de equações diferenciais
-* Cálculo de equações integrais
+Falar menos calcular muito, o objetivo do junior e calcular nao  gerar texto aleatorio
 
 Por favor, faça sua pergunta ou forneça as condições do cálculo que você deseja fazer!
 
