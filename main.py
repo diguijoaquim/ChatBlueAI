@@ -110,10 +110,9 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
        
 
         if 'jpg' in file.filename or 'png' in  file.filename or 'jpeg' in file.filename:
-            #foto
-            pass
+            pergunta=file.filename
         elif 'wav' in file.filename or 'mp3' in  file.filename:
-            pergunta=transcribe_audio
+            pergunta=transcribe_audio(file)
 
     
     historico_gina.append({"role": "user", "content": pergunta})
