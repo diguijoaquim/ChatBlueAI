@@ -103,6 +103,15 @@ async def create_upload_file(file: UploadFile):
     historico_gina.append({"role": "assistent", "content": resposta})
     # Retornar a transcrição
     return resposta
+
+async def getByGemini(file,text):
+    contents = await file.read()
+    img = Image.open(io.BytesIO(contents))
+    
+    # Assumindo que o modelo espera uma imagem de certa forma, por favor, ajuste conforme necessário
+    response = model.generate_content([text, img])
+    
+    return {"response": response.text}
     
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
@@ -110,7 +119,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
        
 
         if 'jpg' in file.filename or 'png' in  file.filename or 'jpeg' in file.filename:
-            pergunta=file.filename
+            pergunta=getByGemini(file,pergunta)
         elif 'wav' in file.filename or 'mp3' in  file.filename:
             pergunta=transcribe_audio(file)
 
