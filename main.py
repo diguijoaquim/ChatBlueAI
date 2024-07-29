@@ -104,6 +104,7 @@ async def create_upload_file(file: UploadFile):
     # Retornar a transcrição
     return resposta
 
+#pegar a resposta da imagem com gemmini
 async def getByGemini(file,text):
     contents = await file.read()
     img = Image.open(io.BytesIO(contents))
@@ -112,6 +113,7 @@ async def getByGemini(file,text):
     response = model.generate_content([text, img])
     
     return {"response": response.text}
+
     
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
@@ -125,7 +127,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
 
     
     historico_gina.append({"role": "user", "content": pergunta})
-    resposta=getResposta(pergunta,treino_gina)
+    resposta=getResposta(pergunta,treino_gina) 
     historico_gina.append({"role": "assistent", "content": resposta})
     # Retornar a transcrição
     return resposta
