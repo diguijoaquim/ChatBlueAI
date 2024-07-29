@@ -122,7 +122,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
 
         if 'jpg' in file.filename or 'png' in  file.filename or 'jpeg' in file.filename:
             pergunta=getByGemini(file,pergunta)
-        elif 'wav' in file.filename or 'mp3' in  file.filename:
+        elif 'wav' in file.filename or 'mp3' in  file.filename or 'WAV' in  file.filename:
             pergunta=transcribe_audio(file)
         
 
