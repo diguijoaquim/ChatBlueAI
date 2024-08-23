@@ -40,7 +40,7 @@ def getResposta(pergunta, modelo):
             {"role": "assistant", "content": modelo},
             {"role": "user", "content": pergunta},
         ],
-        model="llama3-groq-8b-8192-tool-use-preview",
+        model="llama3-8b-8192",
     )
     return response.choices[0].message.content
 
