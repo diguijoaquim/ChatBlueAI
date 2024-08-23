@@ -15,7 +15,7 @@ from treino import *
 app = FastAPI()
 
 client = Groq(
-    api_key=os.getenvi("GINA"),
+    api_key=os.getenv("GINA"),
 )
 
 historico_gina = []
