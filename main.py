@@ -5,7 +5,7 @@ from PIL import Image
 import io
 from typing import Optional
 
-genai.configure(api_key="AIzaSyBtmW-jLX6FX8gcmwZrEGks19v5BNTqtt8")
+genai.configure(api_key=os.getenv("GEMINI"))
 
 model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 from groq import Groq
@@ -14,7 +14,7 @@ from treino import *
 app = FastAPI()
 
 client = Groq(
-    api_key="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",
+    api_key=os.getenvi("GINA"),
 )
 
 historico_gina = []
