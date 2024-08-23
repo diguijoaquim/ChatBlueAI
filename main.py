@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 import google.generativeai as genai
 from PIL import Image
 import io
+import os
 from typing import Optional
 
 genai.configure(api_key=os.getenv("GEMINI"))
@@ -30,7 +31,7 @@ def getResposta(pergunta, modelo):
             {"role": "assistant", "content": modelo},
             {"role": "user", "content": pergunta},
         ],
-        model="llama3-8b-8192",
+        model="llama3-groq-8b-8192-tool-use-preview",
     )
     return response.choices[0].message.content
 
