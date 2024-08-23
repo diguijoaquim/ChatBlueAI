@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
 import google.generativeai as genai
+from starlette.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import os
@@ -13,6 +14,14 @@ from groq import Groq
 from treino import *
 
 app = FastAPI()
+# Configure o middleware CORS para permitir todas as origens, métodos e cabeçalhos
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todas as origens
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos os métodos HTTP
+    allow_headers=["*"],  # Permite todos os cabeçalhos
+)
 
 client = Groq(
     api_key=os.getenv("GINA"),
