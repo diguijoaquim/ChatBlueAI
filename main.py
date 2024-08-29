@@ -59,7 +59,7 @@ async def transcribe_audio(file):
 async def getByGemini(file, text):
     contents = await file.read()
     img = Image.open(io.BytesIO(contents))
-    response = model.generate_content([text, img])
+    response = model.generate_content([f"em portugues:{text}", img])
     return f"<ChatBlueVision data='{response.text}'>"
 
 #rota da Dina
