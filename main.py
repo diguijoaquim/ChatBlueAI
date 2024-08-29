@@ -34,6 +34,7 @@ historico_gina.append({"role": "assistant", "content": treino_gina})
 historico_dina.append({"role": "assistant", "content": treino_dina})
 historico_junior.append({"role": "assistant", "content": treino_junior})
 
+
 def getResposta(pergunta, modelo):
     response = client.chat.completions.create(
         messages=[
@@ -41,6 +42,15 @@ def getResposta(pergunta, modelo):
             {"role": "user", "content": pergunta},
         ],
         model="llama3-8b-8192",
+    )
+    return response.choices[0].message.content
+def getResposta2(pergunta, modelo):
+    response = client.chat.completions.create(
+        messages=[
+            {"role": "assistant", "content": modelo},
+            {"role": "user", "content": pergunta},
+        ],
+        model="llama3-groq-70b-8192-tool-use-preview",
     )
     return response.choices[0].message.content
 
@@ -65,16 +75,23 @@ async def getByGemini(file, text):
 #rota da Dina
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
+    md=1
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             pergunta = await getByGemini(file, pergunta)
-            
+            md=2   
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
+            md=1
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
     historico_gina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_gina)
+    if md==1:
+        resposta = getResposta(pergunta, treino_gina)
+    elif md==2:
+        resposta = getResposta2(pergunta, treino_gina)
+    else:
+        resposta = getResposta(pergunta, treino_gina)
     historico_gina.append({"role": "assistant", "content": resposta})
     return resposta
 
