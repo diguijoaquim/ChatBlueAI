@@ -70,28 +70,22 @@ async def getByGemini(file, text):
     contents = await file.read()
     img = Image.open(io.BytesIO(contents))
     response = model.generate_content([f"em portugues:{text}", img])
-    return f"<ChatBlueVision data='{response.text}'>"
+    return response.text
 
 #rota da Dina
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
-    md=1
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            pergunta = await getByGemini(file, pergunta)
-            md=2   
+            pergunta = await getByGemini(file, pergunta) 
+            historico_gina.append({"role": "assistant", "content": pergunta})
+            return pergunta
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
-            md=1
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
     historico_gina.append({"role": "user", "content": pergunta})
-    if md==1:
-        resposta = getResposta(pergunta, treino_gina)
-    elif md==2:
-        resposta = getResposta2(pergunta, treino_gina)
-    else:
-        resposta = getResposta(pergunta, treino_gina)
+    resposta = getResposta(pergunta, treino_gina)
     historico_gina.append({"role": "assistant", "content": resposta})
     return resposta
 
