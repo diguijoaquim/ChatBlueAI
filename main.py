@@ -60,7 +60,7 @@ async def getByGemini(file, text):
     contents = await file.read()
     img = Image.open(io.BytesIO(contents))
     response = model.generate_content([text, img])
-    return response.text
+    return f"<ChatBlueVision data='{response.text}'>"
 
 #rota da Dina
 @app.post('/gina')
