@@ -44,15 +44,7 @@ def getResposta(pergunta, modelo):
         model="llama3-8b-8192",
     )
     return response.choices[0].message.content
-def getResposta2(pergunta, modelo):
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "assistant", "content": modelo},
-            {"role": "user", "content": pergunta},
-        ],
-        model="llama3-groq-70b-8192-tool-use-preview",
-    )
-    return response.choices[0].message.content
+
 
 async def transcribe_audio(file):
     contents = await file.read()
@@ -79,7 +71,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             pergunta = await getByGemini(file, pergunta) 
             historico_gina.append({"role": "assistant", "content": pergunta})
-            return pergunta
+            return getResposta(f"O usuario disse: {pergunta} e na imagem que o usuario contem: {pergunta} , responda o usuario quer so a descricao da imagem ", treino_gina)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
