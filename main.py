@@ -71,7 +71,11 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             pergunta = await getByGemini(file, pergunta) 
             historico_gina.append({"role": "assistant", "content": pergunta})
-            return getResposta(f"O usuario disse: {pergunta} e na imagem que o usuario contem: {pergunta} , responda o usuario quer so a descricao da imagem ", treino_gina)
+            prompt = (f"Você recebeu a seguinte descrição de uma imagem: '{descricao_imagem}'. "
+              f"O usuário fez a seguinte pergunta: '{pergunta}'. "
+              f"Baseado na descrição da imagem, forneça uma resposta detalhada e útil para a pergunta do usuário.")
+            
+            return getResposta(prompt,treino_gina)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
