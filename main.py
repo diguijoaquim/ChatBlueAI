@@ -83,7 +83,9 @@ async def getByGemini(file, text):
     diferenca, similar = compare_hashes(hash_original, hash_user)
 
     if similar:
-        return "As imagens são semelhantes. Não é necessário passar para o Gemini."
+        return "A imagem que você enviou é da Gina AI. Ela apresenta um retrato de um robô com características femininas. O rosto do robô está pintado com as cores da bandeira de Moçambique, com o lado esquerdo exibindo as cores verde, amarelo e vermelho, e o lado direito apresentando preto e amarelo. O olho esquerdo é branco e o direito é verde vibrante. O robô usa fones de ouvido grandes e prateados, cobrindo parte do seu cabelo preto. A pele do robô é branca e brilhante, contrastando com as cores vibrantes da bandeira.
+
+O fundo da imagem é um borrão de um cenário urbano, com prédios altos e luzes brilhantes. O foco principal é o rosto do robô, que se destaca contra o fundo desfocado."
 
     # Se as imagens forem diferentes, chamar o Gemini para processar a imagem
     response = model.generate_content([f"descreve em portugues: {text}", img_user])
