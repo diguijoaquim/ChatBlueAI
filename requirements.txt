@@ -2,3 +2,5 @@ fastapi[all]
 groq
 google-generativeai
 PILLOW
+imagehash
+
