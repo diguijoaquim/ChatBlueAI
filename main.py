@@ -71,9 +71,9 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta) 
             historico_gina.append({"role": "assistant", "content": pergunta})
-            prompt = (f"Você recebeu a seguinte descrição de uma imagem: '{descricao_imagem}'. "
+            prompt = (f"Essa Image foi procesado com a gina '{descricao_imagem}'. "
               f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-              f"Baseado na descrição da imagem, forneça uma resposta detalhada e útil para a pergunta do usuário.")
+              f"nao fale muito alem da resposta essa imagem foi processado com gina ai ja que usa dois modelos , so retorna a descricao da imagem")
             
             return getResposta(prompt,treino_gina)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
