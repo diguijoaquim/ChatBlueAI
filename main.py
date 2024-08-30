@@ -69,7 +69,7 @@ async def getByGemini(file, text):
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            pergunta = await getByGemini(file, pergunta) 
+            descricao_imagem = await getByGemini(file, pergunta) 
             historico_gina.append({"role": "assistant", "content": pergunta})
             prompt = (f"Você recebeu a seguinte descrição de uma imagem: '{descricao_imagem}'. "
               f"O usuário fez a seguinte pergunta: '{pergunta}'. "
