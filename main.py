@@ -83,9 +83,14 @@ async def getByGemini(file, text):
     diferenca, similar = compare_hashes(hash_original, hash_user)
 
     if similar:
-        return "A imagem que você enviou é da Gina AI. Ela apresenta um retrato de um robô com características femininas. O rosto do robô está pintado com as cores da bandeira de Moçambique, com o lado esquerdo exibindo as cores verde, amarelo e vermelho, e o lado direito apresentando preto e amarelo. O olho esquerdo é branco e o direito é verde vibrante. O robô usa fones de ouvido grandes e prateados, cobrindo parte do seu cabelo preto. A pele do robô é branca e brilhante, contrastando com as cores vibrantes da bandeira.
-
-O fundo da imagem é um borrão de um cenário urbano, com prédios altos e luzes brilhantes. O foco principal é o rosto do robô, que se destaca contra o fundo desfocado."
+        return """A imagem que você enviou é da Gina AI. Ela apresenta um retrato de um robô
+        com características femininas. O rosto do robô está pintado com as cores da bandeira de Moçambique,
+        com o lado esquerdo exibindo as cores verde, amarelo e vermelho, e o lado direito apresentando preto
+        e amarelo. O olho esquerdo é branco e o direito é verde vibrante. O robô usa fones de ouvido grandes
+        e prateados, cobrindo parte do seu cabelo preto. A pele do robô é branca e brilhante, contrastando
+        com as cores vibrantes da bandeira.
+        O fundo da imagem é um borrão de um cenário urbano, com prédios altos e luzes brilhantes. O foco principal
+        é o rosto do robô, que se destaca contra o fundo desfocado."""
 
     # Se as imagens forem diferentes, chamar o Gemini para processar a imagem
     response = model.generate_content([f"descreve em portugues: {text}", img_user])
@@ -100,7 +105,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
             historico_gina.append({"role": "assistant", "content": pergunta})
             prompt = (f"Essa Image foi procesado com a gina '{descricao_imagem}'. "
               f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-              f"nao fale muito alem da resposta essa imagem foi processado com gina ai ja que usa dois modelos , so retorna a descricao da imagem")
+              f"nao fale muito alem da resposta essa imagem foi processado com gina ai ja que usa dois modelos , so retorna a descricao da imagem voce e a gina e voce sabe processar a imagem")
             
             return getResposta(prompt,treino_gina)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
