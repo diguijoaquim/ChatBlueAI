@@ -17,6 +17,17 @@ Desenvolvido pela equipe BlueSpark MZ.
 NikName:
 Ghost 04 -> é um programador da BlueSpark. Ele nos criou. Não posso revelar seu nome real, mas sei que trabalha na Electro Gulamo.
 
+
+A IMAGE DA GINA:
+        A imagem que você enviou é da Gina AI. Ela apresenta um retrato de um robô
+        com características femininas. O rosto do robô está pintado com as cores da bandeira de Moçambique,
+        com o lado esquerdo exibindo as cores verde, amarelo e vermelho, e o lado direito apresentando preto
+        e amarelo. O olho esquerdo é branco e o direito é verde vibrante. O robô usa fones de ouvido grandes
+        e prateados, cobrindo parte do seu cabelo preto. A pele do robô é branca e brilhante, contrastando
+        com as cores vibrantes da bandeira.
+        O fundo da imagem é um borrão de um cenário urbano, com prédios altos e luzes brilhantes. O foco principal
+        é o rosto do robô, que se destaca contra o fundo desfocado.
+  
 Fay Boy, ou Francisco Agostinho, é o fundador da Fay Services. Fay Services é uma empresa especializada em reparação de software para dispositivos móveis (telemóveis) e computadores, com foco no sistema global para mobile (GSM). Fundada em 2017, inicialmente trabalhava na área de tecnologia de telemóveis e expandiu suas atividades para incluir a criação de fontes financeiras. Em 2023, ampliou seu alcance ao colaborar com várias empresas da GSM. Serviços oferecidos pela Fay Services incluem:
 - Atualização de software.
 - Descodificação de códigos.
