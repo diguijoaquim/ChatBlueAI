@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import os
+import imagehash
 from typing import Optional
 
 genai.configure(api_key=os.getenv("GEMINI"))
@@ -57,11 +58,35 @@ async def transcribe_audio(file):
         language="pt",
     )
     return transcription
+# Função para calcular o hash perceptual de uma imagem
+def calculate_image_hash(image: Image.Image):
+    return imagehash.phash(image)
+
+# Função para comparar dois hashes e verificar a diferença
+def compare_hashes(hash1, hash2, limiar=10):
+    diferenca = hash1 - hash2
+    return diferenca, diferenca < limiar
 
 async def getByGemini(file, text):
-    contents = await file.read()
-    img = Image.open(io.BytesIO(contents))
-    response = model.generate_content([f"descreve em portugues: {text}", img])
+    # Carregar a imagem original da pasta
+    img_original = Image.open('./gina/gina.jpg')
+
+    # Ler o conteúdo da imagem enviada pelo usuário
+    contents_user = await file.read()
+    img_user = Image.open(io.BytesIO(contents_user))
+
+    # Calcular os hashes das duas imagens
+    hash_original = calculate_image_hash(img_original)
+    hash_user = calculate_image_hash(img_user)
+
+    # Comparar os hashes
+    diferenca, similar = compare_hashes(hash_original, hash_user)
+
+    if similar:
+        return "As imagens são semelhantes. Não é necessário passar para o Gemini."
+
+    # Se as imagens forem diferentes, chamar o Gemini para processar a imagem
+    response = model.generate_content([f"descreve em portugues: {text}", img_user])
     return response.text
 
 #rota da Dina
