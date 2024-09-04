@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 import google.generativeai as genai
 from starlette.middleware.cors import CORSMiddleware
@@ -125,6 +125,20 @@ async def download_file(filename: str):
     return FileResponse(filepath, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=filename)
 
 
+# Função auxiliar para salvar resposta em DOCX
+async def save_response_as_docx(response, route_name):
+    # Gerar nome do arquivo com base na data e hora atuais e na rota
+    filename = f"{route_name}_response_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
+    filepath = os.path.join("documents", filename)
+
+    # Criar diretório se não existir
+    os.makedirs("documents", exist_ok=True)
+
+    # Gerar o arquivo DOCX
+    generate_docx(response, filepath)
+    return filename
+
+
 # Rota da Gina
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
@@ -136,15 +150,16 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
                       f"O usuário fez a seguinte pergunta: '{pergunta}'. "
                       f"Não fale muito além da resposta; essa imagem foi processada com Gina AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
             
-            return getResposta(prompt, treino_gina)
-        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
+            resposta = getResposta(prompt, treino_gina)
+        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
     historico_gina.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_gina)
     historico_gina.append({"role": "assistant", "content": resposta})
-    return resposta
+    filename = await save_response_as_docx(resposta, 'gina')
+    return {'response': resposta, 'docs': f"/download/{filename}"}
 
 
 # Rota da Dina
@@ -154,22 +169,14 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             pergunta = await getByGemini(file, pergunta)
             
-        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
+        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
     historico_dina.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_dina)
     historico_dina.append({"role": "assistant", "content": resposta})
-    # Gerar nome do arquivo com base na data e hora atuais
-    filename = f"response_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
-    filepath = os.path.join("documents", filename)
-
-    # Criar diretório se não existir
-    os.makedirs("documents", exist_ok=True)
-
-    # Gerar o arquivo DOCX
-    generate_docx(resposta, filepath)
+    filename = await save_response_as_docx(resposta, 'dina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
 
 
@@ -180,14 +187,15 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             pergunta = await getByGemini(file, pergunta)
             
-        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
+        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
     historico_junior.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_junior)
     historico_junior.append({"role": "assistant", "content": resposta})
-    return resposta
+    filename = await save_response_as_docx(resposta, 'junior')
+    return {'response': resposta, 'docs': f"/download/{filename}"}
 
 
 # Rota da Aliyah
@@ -197,14 +205,15 @@ async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             pergunta = await getByGemini(file, pergunta)
             
-        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
+        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
-    historico_dina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_dina)
-    historico_dina.append({"role": "assistant", "content": resposta})
-    return resposta
+    historico_aliyah.append({"role": "user", "content": pergunta})
+    resposta = getResposta(pergunta, treino_aliyah)
+    historico_aliyah.append({"role": "assistant", "content": resposta})
+    filename = await save_response_as_docx(resposta, 'aliyah')
+    return {'response': resposta, 'docs': f"/download/{filename}"}
 
 
 # Rota da Eva
@@ -214,16 +223,25 @@ async def eva(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             pergunta = await getByGemini(file, pergunta)
             
-        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
+        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
-    historico_dina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_dina)
-    historico_dina.append({"role": "assistant", "content": resposta})
-    return resposta
-
+    historico_eva.append({"role": "user", "content": pergunta})
+    resposta = getResposta(pergunta, treino_eva)
+    historico_eva.append({"role": "assistant", "content": resposta})
+    filename = await save_response_as_docx(resposta, 'eva')
+    return {'response': resposta, 'docs': f"/download/{filename}"}
 
 @app.get("/")
-async def read_root():
-    return HTMLResponse(content="<h2>API Endpoints:</h2><ul><li>/gina</li><li>/dina</li><li>/junior</li><li>/aliyah</li><li>/eva</li></ul>", status_code=200)
+def home():
+    return HTMLResponse("""
+    <html>
+        <head>
+            <title>Chatbot</title>
+        </head>
+        <body>
+            <h1>Welcome to the Chatbot</h1>
+        </body>
+    </html>
+    """)
