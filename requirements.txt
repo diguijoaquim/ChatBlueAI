@@ -3,4 +3,5 @@ groq
 google-generativeai
 PILLOW
 imagehash
+python-docx
 
