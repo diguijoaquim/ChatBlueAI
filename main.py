@@ -1,12 +1,14 @@
 from fastapi import FastAPI, File, UploadFile, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 import google.generativeai as genai
 from starlette.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
+from docx import Document
 import os
 import imagehash
 from typing import Optional
+from datetime import datetime
 
 genai.configure(api_key=os.getenv("GEMINI"))
 
@@ -15,6 +17,7 @@ from groq import Groq
 from treino import *
 
 app = FastAPI()
+
 # Configure o middleware CORS para permitir todas as origens, métodos e cabeçalhos
 app.add_middleware(
     CORSMiddleware,
@@ -58,14 +61,18 @@ async def transcribe_audio(file):
         language="pt",
     )
     return transcription
+
+
 # Função para calcular o hash perceptual de uma imagem
 def calculate_image_hash(image: Image.Image):
     return imagehash.phash(image)
+
 
 # Função para comparar dois hashes e verificar a diferença
 def compare_hashes(hash1, hash2, limiar=10):
     diferenca = hash1 - hash2
     return diferenca, diferenca < limiar
+
 
 async def getByGemini(file, text):
     # Carregar a imagem original da pasta
@@ -99,18 +106,37 @@ async def getByGemini(file, text):
     response = model.generate_content([f"descreve em portugues: {text}", img_user])
     return response.text
 
-#rota da Dina
+
+# Função para gerar o arquivo DOCX com a resposta do chatbot
+def generate_docx(response_text: str, filename: str):
+    document = Document()
+    document.add_heading('Chatbot Response', level=1)
+    document.add_paragraph(response_text)
+    document.save(filename)
+
+
+# Endpoint para download do arquivo DOCX
+@app.get("/download/{filename}")
+async def download_file(filename: str):
+    filepath = os.path.join("documents", filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(filepath, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=filename)
+
+
+# Rota da Gina
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            descricao_imagem = await getByGemini(file, pergunta) 
+            descricao_imagem = await getByGemini(file, pergunta)
             historico_gina.append({"role": "assistant", "content": pergunta})
-            prompt = (f"Essa Image foi procesado com a gina '{descricao_imagem}'. "
-              f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-              f"nao fale muito alem da resposta essa imagem foi processado com gina ai ja que usa dois modelos , so retorna a descricao da imagem voce e a gina e voce sabe processar a imagem")
+            prompt = (f"Essa imagem foi processada com a Gina '{descricao_imagem}'. "
+                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
+                      f"Não fale muito além da resposta; essa imagem foi processada com Gina AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
             
-            return getResposta(prompt,treino_gina)
+            return getResposta(prompt, treino_gina)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename or 'ogg' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
@@ -120,7 +146,8 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_gina.append({"role": "assistant", "content": resposta})
     return resposta
 
-#Rota da Dina
+
+# Rota da Dina
 @app.post('/dina')
 async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
@@ -134,9 +161,19 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_dina.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_dina)
     historico_dina.append({"role": "assistant", "content": resposta})
-    return resposta
+    # Gerar nome do arquivo com base na data e hora atuais
+    filename = f"response_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
+    filepath = os.path.join("documents", filename)
 
-#Rota Junior 
+    # Criar diretório se não existir
+    os.makedirs("documents", exist_ok=True)
+
+    # Gerar o arquivo DOCX
+    generate_docx(resposta, filepath)
+    return {'response': resposta, 'docs': f"/download/{filename}"}
+
+
+# Rota Junior 
 @app.post('/junior')
 async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
@@ -152,7 +189,8 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_junior.append({"role": "assistant", "content": resposta})
     return resposta
 
-#Rota da Aliyah
+
+# Rota da Aliyah
 @app.post('/aliyah')
 async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
@@ -169,7 +207,7 @@ async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
     return resposta
 
 
-#Rota da Eva
+# Rota da Eva
 @app.post('/eva')
 async def eva(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
@@ -184,3 +222,8 @@ async def eva(pergunta: str, file: Optional[UploadFile] = File(None)):
     resposta = getResposta(pergunta, treino_dina)
     historico_dina.append({"role": "assistant", "content": resposta})
     return resposta
+
+
+@app.get("/")
+async def read_root():
+    return HTMLResponse(content="<h2>API Endpoints:</h2><ul><li>/gina</li><li>/dina</li><li>/junior</li><li>/aliyah</li><li>/eva</li></ul>", status_code=200)
