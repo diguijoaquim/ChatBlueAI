@@ -3,5 +3,5 @@ groq
 google-generativeai
 PILLOW
 imagehash
-python-docx
+fpdf2
 
