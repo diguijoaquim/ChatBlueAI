@@ -4,7 +4,7 @@ import google.generativeai as genai
 from starlette.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
-from docx import Document
+from fpdf import FPDF
 import os
 import imagehash
 from typing import Optional
@@ -107,35 +107,36 @@ async def getByGemini(file, text):
     return response.text
 
 
-# Função para gerar o arquivo DOCX com a resposta do chatbot
-def generate_docx(response_text: str, filename: str):
-    document = Document()
-    document.add_heading('Chatbot Response', level=1)
-    document.add_paragraph(response_text)
-    document.save(filename)
+# Função para gerar o arquivo PDF com a resposta do chatbot
+def generate_pdf(response_text: str, filename: str):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, response_text)
+    pdf.output(filename)
 
 
-# Endpoint para download do arquivo DOCX
+# Endpoint para download do arquivo PDF
 @app.get("/download/{filename}")
 async def download_file(filename: str):
     filepath = os.path.join("documents", filename)
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
 
-    return FileResponse(filepath, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename=filename)
+    return FileResponse(filepath, media_type='application/pdf', filename=filename)
 
 
-# Função auxiliar para salvar resposta em DOCX
-async def save_response_as_docx(response, route_name):
+# Função auxiliar para salvar resposta em PDF
+async def save_response_as_pdf(response, route_name):
     # Gerar nome do arquivo com base na data e hora atuais e na rota
-    filename = f"{route_name}_response_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
+    filename = f"{route_name}_response_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
     filepath = os.path.join("documents", filename)
 
     # Criar diretório se não existir
     os.makedirs("documents", exist_ok=True)
 
-    # Gerar o arquivo DOCX
-    generate_docx(response, filepath)
+    # Gerar o arquivo PDF
+    generate_pdf(response, filepath)
     return filename
 
 
@@ -158,10 +159,9 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_gina.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_gina)
     historico_gina.append({"role": "assistant", "content": resposta})
-    filename = await save_response_as_docx(resposta, 'gina')
+    filename = await save_response_as_pdf(resposta, 'gina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
-
-
+    
 # Rota da Dina
 @app.post('/dina')
 async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
