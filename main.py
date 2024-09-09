@@ -9,6 +9,7 @@ import os
 import imagehash
 from typing import Optional
 from datetime import datetime
+import asyncio
 
 genai.configure(api_key=os.getenv("GEMINI"))
 
@@ -125,7 +126,17 @@ async def download_file(filename: str):
 
     return FileResponse(filepath, media_type='application/pdf', filename=filename)
 
-
+# Função assíncrona para deletar o arquivo após 1 hora
+async def delete_file_after_one_hour(filepath: str):
+    # Espera 1 hora (3600 segundos)
+    await asyncio.sleep(3600)
+    
+    # Verifica se o arquivo ainda existe e o exclui
+    if os.path.exists(filepath):
+        os.remove(filepath)
+        print(f"Arquivo {filepath} deletado após 1 hora.")
+    else:
+        print(f"O arquivo {filepath} não existe ou já foi deletado.")
 # Função auxiliar para salvar resposta em PDF
 async def save_response_as_pdf(response, route_name):
     # Gerar nome do arquivo com base na data e hora atuais e na rota
@@ -137,7 +148,12 @@ async def save_response_as_pdf(response, route_name):
 
     # Gerar o arquivo PDF
     generate_pdf(response, filepath)
+    
+    # Iniciar a tarefa de deletar o arquivo após 1 hora
+    asyncio.create_task(delete_file_after_one_hour(filepath))
+    
     return filename
+
 
 
 # Rota da Gina
