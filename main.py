@@ -164,19 +164,24 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     
 # Rota da Dina
 @app.post('/dina')
-async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
+async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            pergunta = await getByGemini(file, pergunta)
+            descricao_imagem = await getByGemini(file, pergunta)
+            historico_gina.append({"role": "assistant", "content": pergunta})
+            prompt = (f"Essa imagem foi processada com a Dina '{descricao_imagem}'. "
+                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
+                      f"Não fale muito além da resposta; essa imagem foi processada com Dina AI, Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
             
-        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
+            resposta = getResposta(prompt, treino_dina)
+        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
     historico_dina.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_dina)
-    historico_dina.append({"role": "assistant", "content": resposta})
-    filename = await save_response_as_docx(resposta, 'dina')
+    historico_gina.append({"role": "assistant", "content": resposta})
+    filename = await save_response_as_pdf(resposta, 'dina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
 
 
@@ -185,16 +190,21 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
 async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            pergunta = await getByGemini(file, pergunta)
+            descricao_imagem = await getByGemini(file, pergunta)
+            historico_junior.append({"role": "assistant", "content": pergunta})
+            prompt = (f"Essa imagem foi processada com a ChatBlue Ai vc e um modelo de matematica, '{descricao_imagem}'. "
+                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
+                      f"Não fale muito além da resposta; so calcule com as regras de $$ e nao fale nada alem de calcular")
             
-        elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
+            resposta = getResposta(prompt, treino_junior)
+        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
     
     historico_junior.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_junior)
     historico_junior.append({"role": "assistant", "content": resposta})
-    filename = await save_response_as_docx(resposta, 'junior')
+    filename = await save_response_as_pdf(resposta, 'junior')
     return {'response': resposta, 'docs': f"/download/{filename}"}
 
 
@@ -203,14 +213,19 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
 async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            pergunta = await getByGemini(file, pergunta)
-            
+            descricao_imagem = await getByGemini(file, pergunta)
+            historico_aliyah.append({"role": "assistant", "content": pergunta})
+            prompt = (f"Essa imagem foi processada com a Aliyah '{descricao_imagem}'. "
+                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
+                      f"Não fale muito além da resposta; essa imagem foi processada com Aliyah AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Aliyah e sabe processar a imagem.")
+            resposta = getResposta(prompt, treino_aliyah)
         elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
+    else:
+        resposta = getResposta(pergunta, treino_aliyah)
     
     historico_aliyah.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_aliyah)
     historico_aliyah.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_docx(resposta, 'aliyah')
     return {'response': resposta, 'docs': f"/download/{filename}"}
@@ -221,14 +236,19 @@ async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
 async def eva(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            pergunta = await getByGemini(file, pergunta)
-            
+            descricao_imagem = await getByGemini(file, pergunta)
+            historico_eva.append({"role": "assistant", "content": pergunta})
+            prompt = (f"Essa imagem foi processada com a Eva '{descricao_imagem}'. "
+                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
+                      f"Não fale muito além da resposta; essa imagem foi processada com Eva AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Eva e sabe processar a imagem.")
+            resposta = getResposta(prompt, treino_eva)
         elif 'wav' in file.filename or 'mp3' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
+    else:
+        resposta = getResposta(pergunta, treino_eva)
     
     historico_eva.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_eva)
     historico_eva.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_docx(resposta, 'eva')
     return {'response': resposta, 'docs': f"/download/{filename}"}
