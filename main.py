@@ -186,10 +186,20 @@ async def save_response_as_docx(response, route_name):
     
     return filename
 
+# Função para verificar se o arquivo está vazio
+async def validate_file(file: UploadFile):
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="File is empty")
+    return contents
+
 # Rota da Gina
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
+        # Validar se o arquivo não está vazio
+        contents = await validate_file(file)
+        
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_gina.append({"role": "assistant", "content": pergunta})
@@ -214,6 +224,9 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
 @app.post('/dina')
 async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
+        # Validar se o arquivo não está vazio
+        contents = await validate_file(file)
+        
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_dina.append({"role": "assistant", "content": pergunta})
@@ -238,6 +251,9 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
 @app.post('/junior')
 async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
+        # Validar se o arquivo não está vazio
+        contents = await validate_file(file)
+        
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_junior.append({"role": "assistant", "content": pergunta})
@@ -258,10 +274,13 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
     filename = await save_response_as_pdf(resposta, 'junior')
     return {'response': resposta, 'docs': f"/download/{filename}"}
 
-# Rota do Aliyah
+# Rota da Aliyah
 @app.post('/aliyah')
 async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
+        # Validar se o arquivo não está vazio
+        contents = await validate_file(file)
+        
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_aliyah.append({"role": "assistant", "content": pergunta})
@@ -286,6 +305,9 @@ async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
 @app.post('/eva')
 async def eva(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
+        # Validar se o arquivo não está vazio
+        contents = await validate_file(file)
+        
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_eva.append({"role": "assistant", "content": pergunta})
@@ -305,19 +327,3 @@ async def eva(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_eva.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'eva')
     return {'response': resposta, 'docs': f"/download/{filename}"}
-
-# Rota para ver o histórico do chatbot
-@app.get('/historico/{chatbot}')
-async def historico(chatbot: str):
-    if chatbot == 'gina':
-        return {'historico': historico_gina}
-    elif chatbot == 'dina':
-        return {'historico': historico_dina}
-    elif chatbot == 'junior':
-        return {'historico': historico_junior}
-    elif chatbot == 'aliyah':
-        return {'historico': historico_aliyah}
-    elif chatbot == 'eva':
-        return {'historico': historico_eva}
-    else:
-        raise HTTPException(status_code=404, detail="Chatbot não encontrado")
