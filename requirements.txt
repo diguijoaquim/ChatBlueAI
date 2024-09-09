@@ -3,5 +3,6 @@ groq
 google-generativeai
 PILLOW
 imagehash
+asyncio
 fpdf2
 
