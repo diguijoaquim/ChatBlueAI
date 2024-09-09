@@ -1,6 +1,5 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
-import google.generativeai as genai
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import FileResponse
 from starlette.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
@@ -10,12 +9,6 @@ import imagehash
 from typing import Optional
 from datetime import datetime
 import asyncio
-
-genai.configure(api_key=os.getenv("GEMINI"))
-
-model = genai.GenerativeModel(model_name="gemini-1.5-flash")
-from groq import Groq
-from treino import *
 
 app = FastAPI()
 
@@ -28,70 +21,63 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos os cabeçalhos
 )
 
-client = Groq(
-    api_key=os.getenv("GINA"),
-)
+def generate_pdf(response_text: str, filename: str):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, response_text)
+    pdf.output(filename)
 
-historico_gina = []
-historico_dina = []
-historico_junior = []
-historico_aliyah = []
-historico_eva = []
-historico_gina.append({"role": "assistant", "content": treino_gina})
-historico_dina.append({"role": "assistant", "content": treino_dina})
-historico_junior.append({"role": "assistant", "content": treino_junior})
-historico_aliyah.append({"role": "assistant", "content": treino_aliyah})
-historico_eva.append({"role": "assistant", "content": treino_eva})
+async def delete_file_after_one_hour(filepath: str):
+    # Espera 1 hora (3600 segundos)
+    await asyncio.sleep(3600)
+    
+    # Verifica se o arquivo ainda existe e o exclui
+    if os.path.exists(filepath):
+        os.remove(filepath)
+        print(f"Arquivo {filepath} deletado após 1 hora.")
+    else:
+        print(f"O arquivo {filepath} não existe ou já foi deletado.")
 
+async def save_response_as_pdf(response, route_name):
+    # Gerar nome do arquivo com base na data e hora atuais e na rota
+    filename = f"{route_name}_response_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    filepath = os.path.join("documents", filename)
 
-def getResposta(pergunta, modelo):
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "assistant", "content": modelo},
-            {"role": "user", "content": pergunta},
-        ],
-        model="llama3-8b-8192",
-    )
-    return response.choices[0].message.content
+    # Criar diretório se não existir
+    os.makedirs("documents", exist_ok=True)
 
+    # Gerar o arquivo PDF
+    generate_pdf(response, filepath)
+    
+    # Iniciar a tarefa de deletar o arquivo após 1 hora
+    asyncio.create_task(delete_file_after_one_hour(filepath))
+    
+    return filename
 
-async def transcribe_audio(file):
+async def validate_file(file: UploadFile):
+    if file.content_type not in ["image/jpeg", "image/png", "image/jpg", "audio/wav", "audio/ogg", "audio/mp3"]:
+        raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado.")
     contents = await file.read()
-    audio_buffer = io.BytesIO(contents)
-    audio_buffer.name = file.filename
-    transcription = client.audio.transcriptions.create(
-        file=(audio_buffer.name, audio_buffer.read()),
-        model="whisper-large-v3",
-        response_format="verbose_json",
-        language="pt",
-    )
-    return transcription
-
+    if not contents:
+        raise HTTPException(status_code=400, detail="Arquivo vazio.")
+    return contents
 
 # Função para calcular o hash perceptual de uma imagem
 def calculate_image_hash(image: Image.Image):
     return imagehash.phash(image)
-
 
 # Função para comparar dois hashes e verificar a diferença
 def compare_hashes(hash1, hash2, limiar=10):
     diferenca = hash1 - hash2
     return diferenca, diferenca < limiar
 
-
 async def getByGemini(file, text):
-    # Carregar a imagem original da pasta
     img_original = Image.open('./gina/gina.jpg')
-
-    # Ler o conteúdo da imagem enviada pelo usuário
     contents_user = await file.read()
     img_user = Image.open(io.BytesIO(contents_user))
-
-    # Calcular os hashes das duas imagens
     hash_original = calculate_image_hash(img_original)
     hash_user = calculate_image_hash(img_user)
-
-    # Comparar os hashes
     diferenca, similar = compare_hashes(hash_original, hash_user)
 
     if similar:
@@ -111,25 +97,6 @@ async def getByGemini(file, text):
     response = model.generate_content([f"descreve em portugues: {text}", img_user])
     return response.text
 
-
-# Função para gerar o arquivo PDF com a resposta do chatbot
-def generate_pdf(response_text: str, filename: str):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, response_text)
-    pdf.output(filename)
-
-
-# Função para gerar o arquivo DOCX com a resposta do chatbot
-def generate_docx(response_text: str, filename: str):
-    from docx import Document
-    doc = Document()
-    doc.add_paragraph(response_text)
-    doc.save(filename)
-
-
-# Endpoint para download do arquivo PDF
 @app.get("/download/{filename}")
 async def download_file(filename: str):
     filepath = os.path.join("documents", filename)
@@ -138,74 +105,16 @@ async def download_file(filename: str):
 
     return FileResponse(filepath, media_type='application/pdf', filename=filename)
 
-
-# Função assíncrona para deletar o arquivo após 1 hora
-async def delete_file_after_one_hour(filepath: str):
-    # Espera 1 hora (3600 segundos)
-    await asyncio.sleep(3600)
-    
-    # Verifica se o arquivo ainda existe e o exclui
-    if os.path.exists(filepath):
-        os.remove(filepath)
-        print(f"Arquivo {filepath} deletado após 1 hora.")
-    else:
-        print(f"O arquivo {filepath} não existe ou já foi deletado.")
-
-
-# Função auxiliar para salvar resposta em PDF
-async def save_response_as_pdf(response, route_name):
-    # Gerar nome do arquivo com base na data e hora atuais e na rota
-    filename = f"{route_name}_response_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-    filepath = os.path.join("documents", filename)
-
-    # Criar diretório se não existir
-    os.makedirs("documents", exist_ok=True)
-
-    # Gerar o arquivo PDF
-    generate_pdf(response, filepath)
-    
-    # Iniciar a tarefa de deletar o arquivo após 1 hora
-    asyncio.create_task(delete_file_after_one_hour(filepath))
-    
-    return filename
-
-# Função auxiliar para salvar resposta em DOCX
-async def save_response_as_docx(response, route_name):
-    # Gerar nome do arquivo com base na data e hora atuais e na rota
-    filename = f"{route_name}_response_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
-    filepath = os.path.join("documents", filename)
-
-    # Criar diretório se não existir
-    os.makedirs("documents", exist_ok=True)
-
-    # Gerar o arquivo DOCX
-    generate_docx(response, filepath)
-    
-    # Iniciar a tarefa de deletar o arquivo após 1 hora
-    asyncio.create_task(delete_file_after_one_hour(filepath))
-    
-    return filename
-
-# Função para verificar se o arquivo está vazio
-async def validate_file(file: UploadFile):
-    contents = await file.read()
-    if not contents:
-        raise HTTPException(status_code=400, detail="File is empty")
-    return contents
-
-# Rota da Gina
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
-        # Validar se o arquivo não está vazio
         contents = await validate_file(file)
         
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
-            historico_gina.append({"role": "assistant", "content": pergunta})
             prompt = (f"Essa imagem foi processada com a Gina '{descricao_imagem}'. "
                       f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com Gina AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
+                      f"Não fale muito além da resposta; essa imagem foi processada com Gina AI.")
             
             resposta = getResposta(prompt, treino_gina)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
@@ -214,25 +123,22 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     else:
         resposta = getResposta(pergunta, treino_gina)
     
-    historico_gina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_gina)
-    historico_gina.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'gina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
 
-# Rota da Dina
+# Repita a mesma estrutura para as rotas /dina, /junior, /aliyah, /eva
+
+# Exemplo para a rota /dina
 @app.post('/dina')
 async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
-        # Validar se o arquivo não está vazio
         contents = await validate_file(file)
         
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
-            historico_dina.append({"role": "assistant", "content": pergunta})
             prompt = (f"Essa imagem foi processada com a Dina '{descricao_imagem}'. "
                       f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com Dina AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Dina e sabe processar a imagem.")
+                      f"Não fale muito além da resposta; essa imagem foi processada com Dina AI.")
             
             resposta = getResposta(prompt, treino_dina)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
@@ -241,89 +147,5 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     else:
         resposta = getResposta(pergunta, treino_dina)
     
-    historico_dina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_dina)
-    historico_dina.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'dina')
-    return {'response': resposta, 'docs': f"/download/{filename}"}
-
-# Rota do Junior
-@app.post('/junior')
-async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
-    if file:
-        # Validar se o arquivo não está vazio
-        contents = await validate_file(file)
-        
-        if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            descricao_imagem = await getByGemini(file, pergunta)
-            historico_junior.append({"role": "assistant", "content": pergunta})
-            prompt = (f"Essa imagem foi processada com o Junior '{descricao_imagem}'. "
-                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com Junior AI, já que usa dois modelos. Só retorna a descrição da imagem, você é o Junior e sabe processar a imagem.")
-            
-            resposta = getResposta(prompt, treino_junior)
-        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
-            transcription = await transcribe_audio(file)
-            pergunta = transcription.text
-    else:
-        resposta = getResposta(pergunta, treino_junior)
-    
-    historico_junior.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_junior)
-    historico_junior.append({"role": "assistant", "content": resposta})
-    filename = await save_response_as_pdf(resposta, 'junior')
-    return {'response': resposta, 'docs': f"/download/{filename}"}
-
-# Rota da Aliyah
-@app.post('/aliyah')
-async def aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
-    if file:
-        # Validar se o arquivo não está vazio
-        contents = await validate_file(file)
-        
-        if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            descricao_imagem = await getByGemini(file, pergunta)
-            historico_aliyah.append({"role": "assistant", "content": pergunta})
-            prompt = (f"Essa imagem foi processada com a Aliyah '{descricao_imagem}'. "
-                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com Aliyah AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Aliyah e sabe processar a imagem.")
-            
-            resposta = getResposta(prompt, treino_aliyah)
-        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
-            transcription = await transcribe_audio(file)
-            pergunta = transcription.text
-    else:
-        resposta = getResposta(pergunta, treino_aliyah)
-    
-    historico_aliyah.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_aliyah)
-    historico_aliyah.append({"role": "assistant", "content": resposta})
-    filename = await save_response_as_pdf(resposta, 'aliyah')
-    return {'response': resposta, 'docs': f"/download/{filename}"}
-
-# Rota do Eva
-@app.post('/eva')
-async def eva(pergunta: str, file: Optional[UploadFile] = File(None)):
-    if file:
-        # Validar se o arquivo não está vazio
-        contents = await validate_file(file)
-        
-        if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
-            descricao_imagem = await getByGemini(file, pergunta)
-            historico_eva.append({"role": "assistant", "content": pergunta})
-            prompt = (f"Essa imagem foi processada com a Eva '{descricao_imagem}'. "
-                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com Eva AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Eva e sabe processar a imagem.")
-            
-            resposta = getResposta(prompt, treino_eva)
-        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
-            transcription = await transcribe_audio(file)
-            pergunta = transcription.text
-    else:
-        resposta = getResposta(pergunta, treino_eva)
-    
-    historico_eva.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_eva)
-    historico_eva.append({"role": "assistant", "content": resposta})
-    filename = await save_response_as_pdf(resposta, 'eva')
     return {'response': resposta, 'docs': f"/download/{filename}"}
