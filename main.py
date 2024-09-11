@@ -211,8 +211,7 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_junior.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_junior)
     historico_junior.append({"role": "assistant", "content": resposta})
-    filename = await save_response_as_pdf(resposta, 'junior')
-    return {'response': resposta, 'docs': f"/download/{filename}"}
+    return {'response': resposta, 'docs': ""}
 
 
 # Rota da Aliyah
