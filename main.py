@@ -250,6 +250,33 @@ async def Eva(pergunta: str, file: Optional[UploadFile] = File(None)):
     historico_eva.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'eva')
     return {'response': resposta, 'docs': f"/download/{filename}"}
+#tradutor
+@app.post('/tradutor')
+async def traduz(pergunta: str, file: Optional[UploadFile] = File(None)):
+    if file:
+        if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
+            descricao_imagem = await getByGemini(file, pergunta)
+            return {'response': descricao_imagem, 'docs': f""}
+
+        elif any(ext in file.filename for ext in ['wav', '3gp', 'WAV', 'OGG']):
+            transcription = await transcribe_audio(file)
+            pergunta = transcription.text
+        else:
+            raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado")
+    
+    response = client.chat.completions.create(
+        messages=[
+        
+        {
+            "role": "assistant",
+            "content": "Sou tradutor de linguas"
+        }
+    ],
+        model="llama3-8b-8192",
+    )
+    resposta= response.choices[0].message.content
+   
+    return {'response': resposta, 'docs': f""}
 
 @app.get("/")
 def home():
