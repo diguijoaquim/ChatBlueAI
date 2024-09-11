@@ -154,12 +154,11 @@ async def save_response_as_pdf(response, route_name):
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
-            print("passou tem imagem")
             descricao_imagem = await getByGemini(file, pergunta)
             historico_gina.append({"role": "assistant", "content": pergunta})
-            prompt = (f"image processada pelo ChatBlue Ai: '{descricao_imagem}'")
-            
-            resposta = getResposta(prompt, treino_gina)
+            filename = await save_response_as_pdf(resposta, 'gina')
+            return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
+
         elif any(ext in file.filename for ext in ['wav', '3gp', 'WAV', 'OGG']):
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
@@ -178,8 +177,8 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
         if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
             descricao_imagem = await getByGemini(file, pergunta)
             historico_dina.append({"role": "assistant", "content": pergunta})
-            prompt = (f"image processada pelo ChatBlue Ai: '{descricao_imagem}'")
-            resposta = getResposta(prompt, treino_dina)
+            filename = await save_response_as_pdf(resposta, 'dina')
+            return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
         elif any(ext in file.filename for ext in ['wav', '3gp', 'WAV', 'OGG']):
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
@@ -201,9 +200,8 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_junior.append({"role": "assistant", "content": pergunta})
-            prompt = (f"image processada pelo ChatBlue Ai: '{descricao_imagem}'")
-            
-            resposta = getResposta(prompt, treino_junior)
+            filename = await save_response_as_pdf(resposta, 'junior')
+            return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
@@ -221,11 +219,8 @@ async def Aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_junior.append({"role": "assistant", "content": pergunta})
-            prompt = (f"Essa imagem foi processada com a ChatBlue AI '{descricao_imagem}'. "
-                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com ChatBlue AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
-            
-            resposta = getResposta(prompt, treino_junior)
+            filename = await save_response_as_pdf(resposta, 'aliyah')
+            return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
@@ -244,9 +239,8 @@ async def Eva(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_eva.append({"role": "assistant", "content": pergunta})
-            prompt = (f"Essa imagem foi processada com a ChatBlue AI '{descricao_imagem}'. "
-                      f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com ChatBlue AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
+            filename = await save_response_as_pdf(resposta, 'eva')
+            return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
             
             resposta = getResposta(prompt, treino_junior)
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
