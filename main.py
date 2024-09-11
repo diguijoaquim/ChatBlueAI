@@ -31,14 +31,11 @@ client = Groq(
     api_key=os.getenv("GINA"),
 )
 
-historico_gina = []
-historico_dina = []
-historico_junior = []
-historico_gina.append({"role": "assistant", "content": treino_gina})
-historico_dina.append({"role": "assistant", "content": treino_dina})
-historico_junior.append({"role": "assistant", "content": treino_junior})
-
-
+historico_gina = [{"role": "assistant", "content": treino_gina},]
+historico_dina = [{"role": "assistant", "content": treino_dina},]
+historico_junior = [{"role": "assistant", "content": treino_junior},]
+historico_aliyah=[{"role": "assistant", "content": treino_aliyah},]
+historico_eva=[{"role": "assistant", "content": treino_eva},]
 def getResposta(pergunta, modelo):
     response = client.chat.completions.create(
         messages=modelo,
@@ -164,7 +161,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
             raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado")
     
     historico_gina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_gina)
+    resposta = getResposta(pergunta, historico_gina)
     historico_gina.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'gina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
@@ -185,7 +182,7 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
             raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado")
     
     historico_dina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_dina)
+    resposta = getResposta(pergunta, historico_dina)
     historico_dina.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'dina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
@@ -206,7 +203,7 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
             pergunta = transcription.text
     
     historico_junior.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_junior)
+    resposta = getResposta(pergunta, historico_junior)
     historico_junior.append({"role": "assistant", "content": resposta})
     return {'response': resposta, 'docs': ""}
 
@@ -226,7 +223,7 @@ async def Aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
             pergunta = transcription.text
     
     historico_aliyah.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_aliyah)
+    resposta = getResposta(pergunta, historico_aliyah)
     historico_aliyah.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'aliyah')
     return {'response': resposta, 'docs': f"/download/{filename}"}
@@ -249,7 +246,7 @@ async def Eva(pergunta: str, file: Optional[UploadFile] = File(None)):
             pergunta = transcription.text
     
     historico_eva.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_eva)
+    resposta = getResposta(pergunta, historico_eva)
     historico_eva.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'eva')
     return {'response': resposta, 'docs': f"/download/{filename}"}
