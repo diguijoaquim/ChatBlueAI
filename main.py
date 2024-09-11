@@ -41,7 +41,7 @@ historico_junior.append({"role": "assistant", "content": treino_junior})
 
 def getResposta(pergunta, modelo):
     response = client.chat.completions.create(
-        messages=modelo
+        messages=modelo,
         model="llama3-8b-8192",
     )
     return response.choices[0].message.content
