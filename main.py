@@ -171,7 +171,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     
 # Rota da Dina
 @app.post('/dina')
-async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
+async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
