@@ -111,8 +111,15 @@ async def getByGemini(file, text):
 def generate_pdf(response_text: str, filename: str):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
+
+    # Adiciona uma fonte Unicode (por exemplo, DejaVuSans)
+    pdf.add_font("DejaVu", "", "caminho/para/DejaVuSans.ttf", uni=True)  # Certifique-se de especificar o caminho correto para o arquivo .ttf
+    pdf.set_font("DejaVu", size=12)
+
+    # Use multi_cell para adicionar texto com caracteres Unicode
     pdf.multi_cell(0, 10, response_text)
+
+    # Salva o arquivo PDF
     pdf.output(filename)
 
 
