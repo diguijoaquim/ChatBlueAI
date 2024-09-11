@@ -156,7 +156,7 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
         if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
             descricao_imagem = await getByGemini(file, pergunta)
             historico_gina.append({"role": "assistant", "content": pergunta})
-            filename = await save_response_as_pdf(resposta, 'gina')
+            filename = await save_response_as_pdf(descricao_imagem, 'gina')
             return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
 
         elif any(ext in file.filename for ext in ['wav', '3gp', 'WAV', 'OGG']):
@@ -177,7 +177,7 @@ async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
         if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
             descricao_imagem = await getByGemini(file, pergunta)
             historico_dina.append({"role": "assistant", "content": pergunta})
-            filename = await save_response_as_pdf(resposta, 'dina')
+            filename = await save_response_as_pdf(descricao_imagem, 'dina')
             return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
         elif any(ext in file.filename for ext in ['wav', '3gp', 'WAV', 'OGG']):
             transcription = await transcribe_audio(file)
@@ -200,7 +200,7 @@ async def junior(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_junior.append({"role": "assistant", "content": pergunta})
-            filename = await save_response_as_pdf(resposta, 'junior')
+            filename = await save_response_as_pdf(descricao_imagem, 'junior')
             return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
@@ -219,7 +219,7 @@ async def Aliyah(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_junior.append({"role": "assistant", "content": pergunta})
-            filename = await save_response_as_pdf(resposta, 'aliyah')
+            filename = await save_response_as_pdf(descricao_imagem, 'aliyah')
             return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
         elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
             transcription = await transcribe_audio(file)
@@ -239,7 +239,7 @@ async def Eva(pergunta: str, file: Optional[UploadFile] = File(None)):
         if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
             descricao_imagem = await getByGemini(file, pergunta)
             historico_eva.append({"role": "assistant", "content": pergunta})
-            filename = await save_response_as_pdf(resposta, 'eva')
+            filename = await save_response_as_pdf(descricao_imagem, 'eva')
             return {'response': descricao_imagem, 'docs': f"/download/{filename}"}
             
             resposta = getResposta(prompt, treino_junior)
