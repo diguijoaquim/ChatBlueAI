@@ -75,6 +75,7 @@ def compare_hashes(hash1, hash2, limiar=10):
 
 
 async def getByGemini(file, text):
+    print("passou no gemini")
     # Carregar a imagem original da pasta
     img_original = Image.open('./gina/gina.jpg')
 
@@ -152,6 +153,7 @@ async def save_response_as_pdf(response, route_name):
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
         if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
+            print("passou tem imagem")
             descricao_imagem = await getByGemini(file, pergunta)
             historico_gina.append({"role": "assistant", "content": pergunta})
             prompt = (f"Essa imagem foi processada com a Gina '{descricao_imagem}'. "
