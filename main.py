@@ -113,7 +113,7 @@ def generate_pdf(response_text: str, filename: str):
     pdf.add_page()
 
     # Adiciona uma fonte Unicode (por exemplo, DejaVuSans)
-    pdf.add_font("DejaVu", "", "/ttf/DejaVuSans.ttf", uni=True)  # Certifique-se de especificar o caminho correto para o arquivo .ttf
+    pdf.add_font("DejaVu", "", "./ttf/DejaVuSans.ttf", uni=True)  # Certifique-se de especificar o caminho correto para o arquivo .ttf
     pdf.set_font("DejaVu", size=12)
 
     # Use multi_cell para adicionar texto com caracteres Unicode
