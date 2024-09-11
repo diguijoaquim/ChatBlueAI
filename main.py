@@ -104,7 +104,7 @@ async def getByGemini(file, text):
         return resposta
 
     # Se as imagens forem diferentes, chamar o Gemini para processar a imagem
-    response = model.generate_content([f"descreve em portugues: {text}", img_user])
+    response = model.generate_content([f"se a imagem tiver calculos deve retornar com latex se nao apenas descreva a imagem: {text}", img_user])
     print(response.text)
     return response.text
 
