@@ -151,7 +151,7 @@ async def save_response_as_pdf(response, route_name):
 @app.post('/gina')
 async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
-        if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
+        if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
             descricao_imagem = await getByGemini(file, pergunta)
             historico_gina.append({"role": "assistant", "content": pergunta})
             prompt = (f"Essa imagem foi processada com a Gina '{descricao_imagem}'. "
@@ -159,37 +159,41 @@ async def gina(pergunta: str, file: Optional[UploadFile] = File(None)):
                       f"Não fale muito além da resposta; essa imagem foi processada com Gina AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
             
             resposta = getResposta(prompt, treino_gina)
-        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
+        elif any(ext in file.filename for ext in ['wav', '3gp', 'WAV', 'OGG']):
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
+        else:
+            raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado")
     
     historico_gina.append({"role": "user", "content": pergunta})
     resposta = getResposta(pergunta, treino_gina)
     historico_gina.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'gina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
-    
-# Rota da Dina
+
 @app.post('/dina')
 async def dina(pergunta: str, file: Optional[UploadFile] = File(None)):
     if file:
-        if 'jpg' in file.filename or 'png' in file.filename or 'jpeg' in file.filename:
+        if any(ext in file.filename for ext in ['jpg', 'png', 'jpeg']):
             descricao_imagem = await getByGemini(file, pergunta)
-            historico_gina.append({"role": "assistant", "content": pergunta})
+            historico_dina.append({"role": "assistant", "content": pergunta})
             prompt = (f"Essa imagem foi processada com a Dina '{descricao_imagem}'. "
                       f"O usuário fez a seguinte pergunta: '{pergunta}'. "
-                      f"Não fale muito além da resposta; essa imagem foi processada com Dina AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Gina e sabe processar a imagem.")
+                      f"Não fale muito além da resposta; essa imagem foi processada com Dina AI, já que usa dois modelos. Só retorna a descrição da imagem, você é a Dina e sabe processar a imagem.")
             
             resposta = getResposta(prompt, treino_dina)
-        elif 'wav' in file.filename or '3gp' in file.filename or 'WAV' in file.filename or 'OGG' in file.filename:
+        elif any(ext in file.filename for ext in ['wav', '3gp', 'WAV', 'OGG']):
             transcription = await transcribe_audio(file)
             pergunta = transcription.text
+        else:
+            raise HTTPException(status_code=400, detail="Tipo de arquivo não suportado")
     
     historico_dina.append({"role": "user", "content": pergunta})
-    resposta = getResposta(pergunta, treino_gina)
+    resposta = getResposta(pergunta, treino_dina)
     historico_dina.append({"role": "assistant", "content": resposta})
     filename = await save_response_as_pdf(resposta, 'dina')
     return {'response': resposta, 'docs': f"/download/{filename}"}
+
 
 
 # Rota Junior 
