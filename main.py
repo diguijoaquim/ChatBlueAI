@@ -270,7 +270,7 @@ async def traduz(pergunta: str, file: Optional[UploadFile] = File(None)):
         
         {
             "role": "assistant",
-            "content": "Sou tradutor de linguas"
+            "content": "Sou tradutor de linguas,a minha linha principal vai depender da primeira lingua que usuario selencionar,"
         },{
             "role": "user",
             "content": pergunta
