@@ -36,6 +36,7 @@ historico_dina = [{"role": "assistant", "content": treino_dina},]
 historico_junior = [{"role": "assistant", "content": treino_junior},]
 historico_aliyah=[{"role": "assistant", "content": treino_aliyah},]
 historico_eva=[{"role": "assistant", "content": treino_eva},]
+
 def getResposta(pergunta, modelo):
     response = client.chat.completions.create(
         messages=modelo,
@@ -270,6 +271,9 @@ async def traduz(pergunta: str, file: Optional[UploadFile] = File(None)):
         {
             "role": "assistant",
             "content": "Sou tradutor de linguas"
+        },{
+            "role": "user",
+            "content": pergunta
         }
     ],
         model="llama3-8b-8192",
